@@ -1,7 +1,7 @@
 # ReCover
-# Microinsurance Information and Recommendation System
+## Microinsurance Information and Recommendation System
 The key is to build something that helps mitumba market traders understand available microinsurance products, compare their options, and choose what suits their needs.
-User interface
+### User interface
 WhatsApp chatbot 
 Microinsurance knowledge base
 Insurance documents, product details, eligibility, premiums, exclusions and claims procedures
