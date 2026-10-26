@@ -1,0 +1,7 @@
+
+chromadb
+sentence-transformers
+anthropic
+openai
+llama-cloud
+python-dotenv

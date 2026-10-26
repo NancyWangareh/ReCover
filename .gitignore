@@ -1,0 +1,27 @@
+
+# Secrets
+.env
+.env.*
+!.env.example
+secrets.json
+credentials.json
+token.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.venv/
+
+# Generated vector database
+data/chroma_db/
+chroma_db/
+
+# Optional: exclude source documents and parsed text
+data/original/
+data/parsed_output/
