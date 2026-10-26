@@ -4,14 +4,14 @@ The key is to build something that helps mitumba market traders understand avail
 
 The project focuses on improving access to reliable microinsurance information, helping traders understand product terms, and laying the foundation for personalized recommendations that consider their needs and financial circumstances.
 
-## 🎯 Project Objectives
+## Project Objectives
 
 * Improve access to microinsurance information for informal traders.
 * Help traders understand available products, coverage, eligibility requirements, premiums, exclusions, and claims procedures.
 * Provide clear, evidence-based answers to microinsurance questions.
 * Build a foundation for comparing products and developing a separate recommendation system.
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### 1. Microinsurance Knowledge Base
 
@@ -79,7 +79,7 @@ Recommendations will need to be grounded in verified product information and cle
 
 **Status:** Planned; not yet implemented as part of the current information assistant.
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Component               | Technology                        | Purpose                                     |
 | ----------------------- | --------------------------------- | ------------------------------------------- |
@@ -91,7 +91,7 @@ Recommendations will need to be grounded in verified product information and cle
 | Large language model    | Google Gemini                     | Generating answers from retrieved context   |
 | Planned user interface  | WhatsApp                          | Providing access to the assistant           |
 
-## 📁 Project Structure
+## Project Structure
 
 The project is organized into modules to separate configuration, document processing, retrieval, and response generation.
 
@@ -121,7 +121,7 @@ ReCover/
 
 
 
-## 🚧 Current Development Status
+## Current Development Status
 
 | Component                              | Status                                        |
 | -------------------------------------- | --------------------------------------------- |
@@ -136,14 +136,14 @@ ReCover/
 | WhatsApp chatbot integration           | Planned                                       |
 | Separate product recommendation system | Planned                                       |
 
-## 🔒 Data and Security
+## Data and Security
 
 * API keys and credentials should be stored securely and excluded from version control.
 * Generated vector databases and private or restricted source documents should not be committed unless there is a clear reason and permission to share them.
 * Responses should distinguish verified product information from missing or unavailable information.
 * Product details should be checked against reliable source documents before being used to guide decisions.
 
-## 🌱 Improvements
+## Improvements
 
 1. Improve retrieval so product-related questions prioritize product names, providers, and relevant product terms.
 2. Test answer accuracy against the source documents and verify source references.
