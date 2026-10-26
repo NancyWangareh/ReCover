@@ -153,9 +153,7 @@ ReCover/
 6. Develop and validate the separate recommendation system.
 7. Explore appropriate payment-frequency and affordability considerations for traders with irregular incomes.
 
-## 🤝 Project Vision
 
-ReCover aims to make microinsurance information more accessible and understandable for Kenya's informal workers, starting with mitumba market traders.
 
 
 
