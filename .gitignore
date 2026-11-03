@@ -25,3 +25,17 @@ chroma_db/
 # Optional: exclude source documents and parsed text
 data/original/
 data/parsed_output/
+
+
+# Private trader and research data
+data/
+datasets/
+*.csv
+*.xlsx
+
+# Temporary files
+*.log
+.DS_Store
+
+# Python environments
+*.egg-info/
