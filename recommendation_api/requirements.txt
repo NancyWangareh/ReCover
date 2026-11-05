@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 fastapi==0.141.1
 uvicorn==0.54.0
 scikit-learn==1.6.1
@@ -6,12 +6,4 @@ pandas==2.2.3
 numpy==2.4.6
 joblib==1.6.0
 pydantic==2.14.1
-=======
-fastapi
-uvicorn
-scikit-learn==1.6.1
-numpy==2.4.6
-pandas==2.2.3
-joblib==1.6.0
-pydantic
->>>>>>> 4c088d8abd30318a3dc2211742e721d28d550039
+
