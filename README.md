@@ -65,20 +65,17 @@ The intended interaction will allow traders to ask questions and receive clear, 
 
 **Status:** Planned; the current focus is building and testing the underlying information retrieval and response-generation system.
 
-### 5. Pending Recommendation System
+### 5. Recommendation System
 
-The recommendation system will be developed separately from the information assistant.
+The recommendation system is developed separately (a clustering model with a FastAPI service) and is now connected to the assistant in `ReCover_Chatbot.ipynb`.
 
-Its intended purpose is to help traders explore suitable products and payment options based on information such as:
+How the two work together:
 
-* Type of risk or protection needed.
-* Preferred contribution frequency.
-* Affordable contribution amount.
-* Income variability and payment preferences.
+* The assistant decides whether each message is an **information** question or a **recommendation** request.
+* For a recommendation it asks for the details the service needs (risk, stock value, budget, payment preference, income and how steady it is, restock cycle, past losses), a few at a time, then calls the recommendation API and explains the suggested plans in the trader's language.
+* If every suggested plan is above the trader's stated budget, the answer says so plainly. Prices and eligibility are always marked as needing confirmation from the insurer.
 
-Recommendations will need to be grounded in verified product information and clearly explain their limitations.
-
-**Status:** Planned; not yet implemented as part of the current information assistant.
+**Status:** Connected in the notebook. The model was built on synthetic trader data, and the plan prices come from the team's Britam Biashara Lite plan table, which still has to be checked against the brochure.
 
 ## Technology Stack
 
@@ -91,14 +88,16 @@ Recommendations will need to be grounded in verified product information and cle
 | Vector database         | ChromaDB                          | Storing and retrieving document chunks               |
 | Large language model    | Google Gemini                     | Understanding questions and generating answers       |
 | Eligibility rules       | Python                            | Checking requirements stated in the documents        |
+| Recommendation service  | FastAPI, scikit-learn (K-means)   | Suggesting plans from the trader's details (called over HTTP) |
 | Planned user interface  | WhatsApp                          | Providing access to the assistant                    |
 
 ## How to Run
 
 1. Open `ReCover_Chatbot.ipynb` in Google Colab (or locally after `pip install -r requirements.txt`).
 2. If you are not running from inside the cloned repo, put the repo link in `REPO_URL` in Section 1.
-3. Add your Gemini key. In Colab: Secrets > `GEMINI_API_KEY`, with notebook access on. Locally: set the `GEMINI_API_KEY` environment variable.
-4. Run the cells in order. The first run downloads the embedding model and transcribes the scanned PDFs, so it takes a few minutes.
+3. Check `RECOMMENDER_URL` in Section 1 points to the recommendation API.
+4. Add your Gemini key. In Colab: Secrets > `GEMINI_API_KEY`, with notebook access on. Locally: set the `GEMINI_API_KEY` environment variable.
+5. Run the cells in order. The first run downloads the embedding model and transcribes the scanned PDFs, so it takes a few minutes.
 
 ## Project Structure
 
@@ -131,11 +130,12 @@ ReCover/
 | Source references in answers                      | Implemented                                                     |
 | End-to-end information assistant                  | Working in the notebook; answers being checked against sources  |
 | WhatsApp chatbot integration                      | Planned                                                         |
-| Separate product recommendation system            | Planned                                                         |
+| Product recommendation                            | Connected in the notebook (calls the team's API); under review  |
 
 ## Known Limitations
 
-* **No flat premiums.** Neither business insurance document gives one (Britam gives percentage rates, TCIP gives none), so the assistant cannot say whether a product fits a trader's budget. It tells the trader to get a quote.
+* **Recommendations are examples for now.** The model was trained on synthetic data, its plan choice does not use affordability, and its prices are not yet checked against the brochure.
+* **No flat premiums in the Britam network guide.** Neither business insurance document gives one (Britam gives percentage rates, TCIP gives none), so the assistant cannot say whether a product fits a trader's budget. It tells the trader to get a quote.
 * **Eligibility needs insurer confirmation.** The documents do not say whether open-air or temporary stalls qualify for Britam Biashara, so the assistant never says a trader is covered.
 * **OCR can make mistakes.** Transcriptions of scanned PDFs should be checked against the originals.
 * **Swahili and Sheng answers** need review by a native speaker before real traders use them.
@@ -155,6 +155,7 @@ ReCover/
 2. Check every answer to the 21 trader questions against the source documents, and have a native Swahili speaker review the Swahili.
 3. Add eligibility rules for more products as verified premiums and terms become available.
 4. Load product facts from the Excel database instead of writing them in the notebook.
-5. Integrate the information assistant with WhatsApp.
-6. Develop and validate the separate recommendation system.
-7. Explore appropriate payment-frequency and affordability considerations for traders with irregular incomes.
+5. Check the Britam Biashara Lite plan table against the brochure and add the brochure to `data collection/`.
+6. Validate the recommendation model with real trader data.
+7. Integrate the combined assistant with WhatsApp.
+8. Explore appropriate payment-frequency and affordability considerations for traders with irregular incomes.
