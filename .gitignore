@@ -39,3 +39,4 @@ datasets/
 
 # Python environments
 *.egg-info/
+.venv
