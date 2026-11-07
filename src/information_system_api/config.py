@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Load variables from .env file if present
 load_dotenv()
 
 # Navigate up 3 levels to reach the ReCover root:
@@ -38,15 +39,7 @@ MAX_MEMORY_TURNS = 6
 def get_api_key() -> str:
     key = os.environ.get("GEMINI_API_KEY")
     if not key:
-        try:
-            from google.colab import userdata
-
-            key = userdata.get("GEMINI_API_KEY")
-        except Exception:
-            key = None
-
-    if not key:
         raise ValueError(
-            "GEMINI_API_KEY is not set. Please export GEMINI_API_KEY in your terminal or .env file."
+            "GEMINI_API_KEY is not set. Please export GEMINI_API_KEY in your terminal or set it in your .env file."
         )
     return key
