@@ -1,5 +1,6 @@
-
-# Secrets
+# ==========================================
+# Credentials & Secrets
+# ==========================================
 .env
 .env.*
 !.env.example
@@ -7,36 +8,52 @@ secrets.json
 credentials.json
 token.json
 
-# Python cache
+# ==========================================
+# Virtual Environments & Build
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+
+# ==========================================
+# Python & Jupyter Caches
+# ==========================================
 __pycache__/
 *.py[cod]
-
-# Jupyter
+*$py.class
 .ipynb_checkpoints/
+.pytest_cache/
 
-# Virtual environments
-venv/
-.venv/
-
-# Generated vector database
+# ==========================================
+# Generated Database & Heavy Local Caches
+# ==========================================
+# Vector DB binaries (should not be in git)
 data/chroma_db/
 chroma_db/
+*.sqlite3
 
-# Optional: exclude source documents and parsed text
-data/original/
+# Local OCR transcripts and parsed text output
+data/ocr_text/
+data/ocr_cache/
 data/parsed_output/
 
+# ==========================================
+# Logs, System & Temporary Files
+# ==========================================
+*.log
+.DS_Store
+Thumbs.db
 
-# Private trader and research data
-data/
+# ==========================================
+# Sensitive Research / User Data
+# ==========================================
+# Ignore raw survey or private trader datasets
 datasets/
 *.csv
 *.xlsx
-
-# Temporary files
-*.log
-.DS_Store
-
-# Python environments
-*.egg-info/
-.venv
+# Allow your core documentation / evaluation CSVs if you want them tracked
+!data/recover_evaluation_results.csv
