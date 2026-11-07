@@ -9,21 +9,42 @@ from pathlib import Path
 # 1. LOAD SAVED MODEL BUNDLE
 # =========================================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+import os
+import joblib
+import pandas as pd
+import numpy as np
 
-MODEL_PATH = BASE_DIR / "models" / "recover_model_bundle.pkl"
+
+# ============================================================
+# 1. LOAD TRAINED MODEL BUNDLE
+# ============================================================
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_PATH = os.path.abspath(
+    os.path.join(
+        BASE_DIR,
+        "..",
+        "models",
+        "recover_model_bundle.pkl"
+    )
+)
+
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(
+        f"Model bundle not found: {MODEL_PATH}"
+    )
 
 bundle = joblib.load(MODEL_PATH)
 
 preprocessor = bundle["preprocessor"]
 kmeans = bundle["kmeans"]
-
 feature_columns = bundle["feature_columns"]
 
-cluster_product_preferences = bundle["cluster_product_preferences"]
-
+cluster_rankings_df = bundle["cluster_rankings_df"]
 products = bundle["products"]
 
+print("ReCover model bundle loaded successfully.")
 
 # =========================================================
 # 2. HELPER FUNCTION: BOOLEAN CONVERSION
@@ -225,7 +246,9 @@ def recommend_products(trader_data, top_n=3):
     cluster = int(kmeans.predict(transformed_data)[0])
 
     # Retrieve cluster-preferred products
-    preferred_products = cluster_product_preferences[cluster]
+    trader_rankings = cluster_rankings_df[
+    cluster_rankings_df["cluster"] == cluster
+].copy()
 
     # -----------------------------------------------------
     # Retrieve trader financial information
@@ -277,12 +300,19 @@ def recommend_products(trader_data, top_n=3):
         # First consider cluster-preferred products
         # -------------------------------------------------
 
-        options = products[
-            products["plan_name"].isin(preferred_products)
-        ].copy()
+        options = products.merge(
+            trader_rankings,
+            on="product_id",
+            how="inner"
+        )
 
-        options[limit_column] = pd.to_numeric(
-            options[limit_column],
+        if options.empty:
+            raise ValueError(
+                f"No products found for cluster {cluster}."
+            )
+
+        options["cluster_rank"] = pd.to_numeric(
+            options["cluster_rank"],
             errors="coerce"
         )
 
@@ -417,13 +447,9 @@ def recommend_products(trader_data, top_n=3):
     # =====================================================
 
     return {
+    "cluster": cluster,
 
-        "cluster": cluster,
+    "payment_recommendation": payment_recommendation,
 
-        "cluster_preferred_products": preferred_products,
-
-        "payment_recommendation": payment_recommendation,
-
-        "recommendations": recommendations
-
-    }
+    "recommendations": recommendations
+}
