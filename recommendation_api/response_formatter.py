@@ -30,7 +30,7 @@ def format_recommendation_response(trader, recommendations):
     if not isinstance(trader, dict):
         raise TypeError("Trader information must be a dictionary or compatible object.")
 
-    cluster = recommendations.get("cluster", "Not available")
+    cluster = recommendations.get("cluster", {})
 
     payment = recommendations.get("payment_recommendation", {})
 
@@ -83,65 +83,41 @@ def format_recommendation_response(trader, recommendations):
     # Product recommendations
     message.append("")
     message.append("📋 *RECOMMENDED INSURANCE PRODUCTS*")
-
     for index, product in enumerate(products, start=1):
 
-        product_name = product.get(
-            "product_name",
-            product.get("product_id", "Unnamed product")
-        )
+       risk_type = product.get("risk_type", "").lower()
+       coverage_limit = product.get("coverage_limit_kes", 0)
 
-        product_id = product.get("product_id", "Not available")
+    affordability = product.get(
+        "affordability_status",
+        "Not assessed"
+    )
 
-        annual_premium = product.get("annual_premium_kes", 0)
+    message.append(f"\n*{index}. {product.get('product_name', 'Unknown Product')}*")
+    message.append(f"• Product ID: {product.get('product_id', 'N/A')}")
+    message.append(f"• Annual premium: {format_currency(product.get('annual_premium_kes', 0))}")
+    message.append(f"• Monthly premium equivalent: {format_currency(product.get('monthly_premium_equivalent_kes', 0))}")
 
-        monthly_premium = product.get(
-            "monthly_premium_equivalent_kes", 0
-        )
-
-        fire_limit = product.get("fire_limit_kes", 0)
-
-        burglary_limit = product.get("burglary_limit_kes", 0)
-
-        affordability = product.get(
-            "affordability_status",
-            "Not assessed"
-        )
-
-        message.append("")
-        message.append(f"*{index}. {product_name}*")
-        message.append(f"• Product ID: {product_id}")
+    if risk_type == "fire":
         message.append(
-            f"• Annual premium: {format_currency(annual_premium)}"
-        )
+            f"• Fire coverage limit: {format_currency(coverage_limit)}"
+    )
+
+    elif risk_type == "burglary":
         message.append(
-            f"• Monthly premium equivalent: {format_currency(monthly_premium)}"
-        )
+            f"• Burglary coverage limit: {format_currency(coverage_limit)}"
+    )
 
-        if wants_fire:
-            message.append(
-                f"• Fire coverage limit: {format_currency(fire_limit)}"
-            )
+    message.append(f"• Affordability: {affordability}")
 
-        if wants_theft:
-            message.append(
-                f"• Burglary coverage limit: {format_currency(burglary_limit)}"
-            )
-
-        message.append(f"• Affordability: {affordability}")
-
-        message.append(
-            "• Cluster ranking: "
-            + str(product.get("cluster_rank", "Not available"))
-        )
-
+   
     # Payment guidance
     message.append("")
     message.append("💳 *PAYMENT FREQUENCY GUIDANCE*")
 
     message.append(
         "• Stated preference: "
-        + str(payment.get("stated_preference", "Not provided")).title()
+        + str(payment.get("preferred_frequency", "Not provided")).title()
     )
 
     message.append(

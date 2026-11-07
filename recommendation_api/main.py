@@ -69,19 +69,20 @@ def get_recommendations(trader: TraderInput):
 
 @app.post("/recommend/message")
 def recommend_message(trader: TraderInput):
+    try:
+        trader_data = trader.model_dump()
 
-    trader_data = trader.model_dump()
+        recommendations = recommend_products(trader_data)
 
-    api_response = recommender.recommend_products(trader_data)
+        message = format_recommendation_response(
+            trader_data,
+            recommendations
+        )
 
-    recommendations = api_response["recommendations"]
+        return {
+            "success": True,
+            "message": message
+        }
 
-    message = format_recommendation_response(
-        trader_data,
-        recommendations
-    )
-
-    return {
-        "success": True,
-        "message": message
-    }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
