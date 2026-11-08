@@ -34,7 +34,7 @@ bundle = joblib.load(MODEL_PATH)
 
 preprocessor = bundle["preprocessor"]
 kmeans = bundle["kmeans"]
-feature_columns = bundle["feature_columns"]
+feature_columns = bundle["features"]
 
 cluster_rankings_df = bundle["cluster_rankings_df"]
 products = bundle["products"]
