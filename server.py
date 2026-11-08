@@ -102,7 +102,7 @@ async def chat_endpoint(payload: ChatRequest):
 
         # Generate response using gemini-2.5-flash (fastest latency and lowest RAM)
         response = gemini_client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.8-flash",
             contents=prompt,
             config={"system_instruction": system_instruction}
         )
