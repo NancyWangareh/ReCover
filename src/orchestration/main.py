@@ -12,6 +12,7 @@ from orchestration.agent import (
     reset_information_session
 )
 
+from information_system_api.whatsapp import router as whatsapp_router
 
 app = FastAPI(
     title="ReCover Orchestration API",
@@ -22,6 +23,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
+app.include_router(whatsapp_router)
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1)
@@ -59,6 +62,49 @@ def chat(request: ChatRequest):
         )
 
         return result
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+
+
+@app.post("/api/chat")
+def frontend_chat(request: ChatRequest):
+
+    try:
+        result = handle_message(
+            message=request.message,
+            session_id=request.session_id,
+            trader_data=request.trader_data,
+            intent=request.intent
+        )
+
+        if isinstance(result, dict):
+            text = (
+                result.get("answer")
+                or result.get("reply")
+                or result.get("response")
+                or result.get("text")
+                or str(result)
+            )
+
+            return {
+                "reply": text,
+                "answer": text,
+                "sources": result.get("sources", []),
+                "session_id": request.session_id
+            }
+
+        return {
+            "reply": str(result),
+            "answer": str(result),
+            "sources": [],
+            "session_id": request.session_id
+        }
 
     except Exception as e:
         raise HTTPException(

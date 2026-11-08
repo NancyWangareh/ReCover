@@ -1,37 +1,14 @@
-
-import os
-import requests
-
-
-RECOMMENDATION_API_URL = os.getenv(
-    "RECOMMENDATION_API_URL",
-    "https://recover-rwf9.onrender.com"
-).rstrip("/")
+from recommendation_api.recommender import recommend_products
 
 
 def process_recommendations(trader):
     """
-    Call the deployed ReCover Recommendation API,
-    process its results and prepare structured output
-    for the orchestration agent.
+    Call the ReCover recommendation engine directly,
+    without making an HTTP request to Render.
     """
 
-    response = requests.post(
-        f"{RECOMMENDATION_API_URL}/recommend",
-        json=trader,
-        timeout=90
-    )
-
-    response.raise_for_status()
-
-    api_response = response.json()
-
-    if not api_response.get("success"):
-        raise ValueError(
-            "Recommendation API did not return successful results."
-        )
-
-    result = api_response.get("result", {})
+    # Generate recommendations directly
+    result = recommend_products(trader)
 
     cluster = result.get("cluster")
     payment = result.get("payment_recommendation", {})

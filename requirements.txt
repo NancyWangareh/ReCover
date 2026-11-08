@@ -13,3 +13,5 @@ chromadb
 google-genai
 pandas
 openpyxl
+twilio
+python-multipart
