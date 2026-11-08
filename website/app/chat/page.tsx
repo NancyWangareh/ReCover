@@ -4,11 +4,20 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Send, RotateCcw, AlertCircle } from "lucide-react";
 
+interface Source {
+  tag: string;
+  document: string;
+  page: number;
+  reference: string;
+  url: string | null;
+}
+
 interface Message {
   id: string;
   sender: "user" | "advisor";
   text: string;
   timestamp: string;
+  sources?: Source[];
 }
 
 // 1. Dedicated greetings for each language option
@@ -17,6 +26,58 @@ const WELCOME_MESSAGES = {
   Kiswahili: "Habari! Mimi ni ReCover. Niko hapa kukusaidia kuelewa bima ndogondogo (microinsurance) na kuangalia mipango inayofaa biashara yako.\n\nUnaweza kuzungumza nami kwa Kiswahili au Sheng.",
   English: "Hello! I'm ReCover. I'm here to help you understand microinsurance and explore coverage options that work best for your business.\n\nFeel free to ask me anything in plain English."
 };
+
+
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_RECOVER_API_URL || "http://localhost:8000"
+).replace(/\\/$/, "");
+
+const SESSION_STORAGE_KEY = "recover_session_id";
+
+function getSessionId(): string {
+  let sessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+  }
+
+  return sessionId;
+}
+
+function renderAnswerWithCitations(
+  text: string,
+  sources: Source[] = []
+) {
+  const sourceMap = new Map(
+    sources.map((source) => [source.tag, source])
+  );
+
+  const parts = text.split(/(\\[S\\d+\\])/g);
+
+  return parts.map((part, index) => {
+    const source = sourceMap.get(part);
+
+    if (!source || !source.url) {
+      return <React.Fragment key={index}>{part}</React.Fragment>;
+    }
+
+    const citationUrl = new URL(source.url, API_BASE_URL).toString();
+
+    return (
+      <a
+        key={index}
+        href={citationUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#1F7A50] font-semibold underline hover:text-[#145C3A]"
+        title={`${source.document}, page ${source.page}`}
+      >
+        {part}
+      </a>
+    );
+  });
+}
 
 export default function ChatPage() {
   const [languagePref, setLanguagePref] = useState<"auto" | "Kiswahili" | "English">("auto");
@@ -71,13 +132,19 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
     const trimmed = inputText.trim();
+
     if (!trimmed || isLoading) return;
 
     setErrorMessage(null);
 
     const now = new Date();
-    const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    const timeString = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -86,30 +153,29 @@ export default function ChatPage() {
       timestamp: timeString,
     };
 
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, userMessage]);
     setInputText("");
     setIsLoading(true);
 
     try {
-      const payloadMessages = newMessages.map((m) => ({
-        role: m.sender === "user" ? "user" : "model",
-        text: m.text,
-      }));
+      const sessionId = getSessionId();
 
-      const res = await fetch("http://localhost:8000/api/chat", {
+      const res = await fetch(`${API_BASE_URL}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           message: trimmed,
-          history: payloadMessages,
-          language_preference: languagePref,
-          user_id: "demo_trader",
+          session_id: sessionId,
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Unable to reach the advisor service.");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.detail || "Unable to reach the advisor service."
+        );
       }
 
       const data = await res.json();
@@ -117,21 +183,48 @@ export default function ChatPage() {
       const advisorMessage: Message = {
         id: `advisor-${Date.now()}`,
         sender: "advisor",
-        text: data.reply || data.text,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        text: data.answer || "I couldn't generate a response.",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        sources: data.sources || [],
       };
 
       setMessages((prev) => [...prev, advisorMessage]);
+
     } catch (err: any) {
       console.error(err);
-      setErrorMessage("Could not reach backend on port 8000. Ensure your Python server is running.");
+
+      setErrorMessage(
+        err.message || "Could not reach the ReCover backend."
+      );
+
     } finally {
       setIsLoading(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   };
 
-  const handleResetConversation = () => {
+  const handleResetConversation = async () => {
+    const oldSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+
+    if (oldSessionId) {
+      try {
+        await fetch(
+          `${API_BASE_URL}/reset/${encodeURIComponent(oldSessionId)}`,
+          { method: "POST" }
+        );
+      } catch (error) {
+        console.error("Could not reset backend session:", error);
+      }
+    }
+
+    localStorage.setItem(
+      SESSION_STORAGE_KEY,
+      crypto.randomUUID()
+    );
+
     setMessages([
       {
         id: "initial-welcome",
@@ -140,6 +233,7 @@ export default function ChatPage() {
         timestamp: "Just now",
       },
     ]);
+
     setErrorMessage(null);
   };
 
@@ -244,7 +338,38 @@ export default function ChatPage() {
                       : "bg-white text-[#212121] border border-[#E7DFD1] rounded-bl-xs"
                   }`}
                 >
-                  {msg.text}
+                  {renderAnswerWithCitations(msg.text, msg.sources)}
+
+                  {msg.sources && msg.sources.length > 0 && (
+                    <div className="mt-3 pt-2 border-t border-[#EAE3D5]">
+                      <p className="text-xs font-semibold text-[#6B6254] mb-1">
+                        Sources
+                      </p>
+
+                      <div className="flex flex-col gap-1">
+                        {msg.sources.map((source, index) => (
+                          source.url ? (
+                            <a
+                              key={`${source.tag}-${index}`}
+                              href={new URL(source.url, API_BASE_URL).toString()}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-[#1F7A50] underline hover:text-[#145C3A]"
+                            >
+                              {source.tag} {source.document}, page {source.page}
+                            </a>
+                          ) : (
+                            <span
+                              key={`${source.tag}-${index}`}
+                              className="text-xs text-[#6B6254]"
+                            >
+                              {source.tag} {source.document}, page {source.page}
+                            </span>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <span
                     className={`block text-[10px] mt-1.5 text-right ${
                       isUser ? "text-emerald-200/70" : "text-[#8F8675]"

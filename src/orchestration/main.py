@@ -1,6 +1,11 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
+
+from information_system_api.config import DOCS_DIR
 
 from orchestration.agent import (
     handle_message,
@@ -66,3 +71,29 @@ def chat(request: ChatRequest):
 def reset_session(session_id: str):
 
     return reset_information_session(session_id)
+
+
+# Allow requests from the ReCover frontend.
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "FRONTEND_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000"
+    ).split(",")
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+# Serve original PDF documents for clickable citations.
+app.mount(
+    "/documents",
+    StaticFiles(directory=str(DOCS_DIR)),
+    name="documents"
+)
