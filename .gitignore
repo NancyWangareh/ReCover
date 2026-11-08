@@ -57,3 +57,7 @@ datasets/
 *.xlsx
 # Allow your core documentation / evaluation CSVs if you want them tracked
 !data/recover_evaluation_results.csv
+
+# ReCover recommendation system datasets
+!data/recommendation/Traders_dataset_5000 (2).csv
+!data/recommendation/microinsurance_products_dataset.csv
