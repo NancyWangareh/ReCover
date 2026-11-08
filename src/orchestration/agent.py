@@ -9,7 +9,10 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from information_system_api.chatbot import ReCoverChatbot
+from orchestration.intent_detector import detect_intent
 from information_system_api.memory import ConversationManager
+
+from orchestration.recommendation_generator import generate_recommendation_response
 
 from orchestration.recommendation_processor import (
     process_recommendations
@@ -51,35 +54,6 @@ def get_session_memory(session_id):
         return _sessions[session_id]
 
 
-def detect_intent(message):
-    """
-    Basic intent detection for the first orchestration version.
-    """
-
-    text = message.lower()
-
-    recommendation_keywords = [
-        "recommend a product",
-        "recommend products",
-        "recommendation",
-        "recommend insurance",
-        "suggest a product",
-        "which insurance should i choose",
-        "which product should i choose",
-        "suitable insurance",
-        "suitable product",
-        "get recommendations",
-        "what insurance is suitable",
-        "find insurance for my business",
-        "i need insurance for my stock"
-    ]
-
-    if any(keyword in text for keyword in recommendation_keywords):
-        return "recommendation"
-
-    return "information"
-
-
 def handle_message(
     message,
     session_id=None,
@@ -101,7 +75,7 @@ def handle_message(
     selected_intent = intent or detect_intent(message)
 
     # INFORMATION SYSTEM
-    if selected_intent == "information":
+    if selected_intent in ("information", "general_conversation"):
 
         if not session_id:
             return {
@@ -159,14 +133,15 @@ def handle_message(
 
         result = process_recommendations(trader_data)
 
+        conversational_answer = generate_recommendation_response(
+            result
+        )
+
         return {
             "success": True,
             "intent": "recommendation",
             "requires_trader_information": False,
-            "answer": (
-                "Your ReCover product recommendations "
-                "have been generated."
-            ),
+            "answer": conversational_answer,
             "result": result,
             "sources": []
         }
