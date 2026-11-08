@@ -1,5 +1,6 @@
 "use client";
 
+import ReactMarkdown from "react-markdown";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Send, RotateCcw, AlertCircle } from "lucide-react";
@@ -345,7 +346,9 @@ export default function ChatPage() {
                       : "bg-white text-[#212121] border border-[#E7DFD1] rounded-bl-xs"
                   }`}
                 >
-                  {renderAnswerWithCitations(msg.text, msg.sources)}
+                  <ReactMarkdown>
+                    {msg.text}
+                  </ReactMarkdown>
 
                   {msg.sources && msg.sources.length > 0 && (
                     <div className="mt-3 pt-2 border-t border-[#EAE3D5]">
