@@ -65,30 +65,56 @@ async def chat_endpoint(payload: ChatRequest):
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
     try:
-        # Retrieve top 3 relevant chunks from disk-backed ChromaDB
+        # Retrieve top 3 relevant chunks from ChromaDB
         results = collection.query(
             query_texts=[user_query],
             n_results=3
         )
 
-        documents = results.get("documents", [[]])[0]
-        metadatas = results.get("metadatas", [[]])[0]
+        documents = results.get("documents", [[]])[0] if results.get("documents") else []
+        metadatas = results.get("metadatas", [[]])[0] if results.get("metadatas") else []
 
         context_blocks = []
         sources = []
-        for idx, (doc, meta) in enumerate(zip(documents, metadatas)):
+
+        for idx, doc in enumerate(documents):
             tag = f"[S{idx+1}]"
             context_blocks.append(f"{tag}: {doc}")
+
+            # Extract metadata safely with fallbacks
+            meta = metadatas[idx] if idx < len(metadatas) and isinstance(metadatas[idx], dict) else {}
+
+            doc_title = (
+                meta.get("document") 
+                or meta.get("title") 
+                or meta.get("source") 
+                or f"ReCover Insurance Guide {idx+1}"
+            )
+            
+            ref_info = meta.get("reference") or meta.get("section") or f"Section {idx+1}"
+            doc_url = meta.get("url") or meta.get("link") or None
+
             sources.append(
                 Source(
                     tag=tag,
-                    document=meta.get("document", "Microinsurance Guide"),
+                    document=str(doc_title),
                     page=int(meta.get("page", 1)),
-                    reference=meta.get("reference", ""),
-                    url=meta.get("url", None)
+                    reference=str(ref_info),
+                    url=doc_url
                 )
             )
 
+        # If Chroma returned no documents, provide at least one general reference
+        if not sources:
+            sources.append(
+                Source(
+                    tag="[S1]",
+                    document="ReCover Microinsurance Knowledge Base",
+                    page=1,
+                    reference="General Guidelines",
+                    url=None
+                )
+            )
         context_str = "\n\n".join(context_blocks)
 
         system_instruction = (
