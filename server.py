@@ -48,11 +48,12 @@ def chat_endpoint(req: ChatRequest):
         )
         return {
             "reply": text,
+            "answer": text,  # <--- Add this line!
             "sources": response.get("sources", []),
             "session_id": req.session_id
         }
     
-    return {"reply": str(response), "session_id": req.session_id}
+    return {"reply": str(response), "answer": str(response), "session_id": req.session_id}
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)

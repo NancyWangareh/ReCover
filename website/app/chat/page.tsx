@@ -30,7 +30,7 @@ const WELCOME_MESSAGES = {
 
 const API_BASE_URL = (
   process.env.NEXT_PUBLIC_RECOVER_API_URL || "http://localhost:8000"
-).replace(/\\/$/, "");
+).replace(/\/+$/, "");
 
 const SESSION_STORAGE_KEY = "recover_session_id";
 
@@ -160,7 +160,7 @@ export default function ChatPage() {
     try {
       const sessionId = getSessionId();
 
-      const res = await fetch(`${API_BASE_URL}/chat`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -180,10 +180,17 @@ export default function ChatPage() {
 
       const data = await res.json();
 
+      const rawText = data.answer || data.reply || "I couldn't generate a response.";
+      const cleanText = rawText
+        .replace(/\[S\d+(?:,\s*S\d+)*\]/gi, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/\s+([.,!?:])/g, "$1")
+        .trim();
+
       const advisorMessage: Message = {
         id: `advisor-${Date.now()}`,
         sender: "advisor",
-        text: data.answer || "I couldn't generate a response.",
+        text: cleanText,
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
