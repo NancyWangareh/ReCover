@@ -35,8 +35,16 @@ class ReCoverChatbot:
         chunks = chunk_pages(all_pages)
         self.indexer.build_index(chunks)
 
-    def ask(self, user_message: str) -> Dict[str, Any]:
+    def ask(
+        self,
+        user_message: str,
+        memory: ConversationManager = None
+    ) -> Dict[str, Any]:
+
+        session_memory = memory if memory is not None else self.memory
+
         cleaned = user_message.strip()
+
         if not cleaned:
             return {
                 "answer": "Please ask an insurance question to get started.",
@@ -45,14 +53,33 @@ class ReCoverChatbot:
                 "evidence": []
             }
 
-        history = self.memory.get_history()
-        interpretation = interpret_user_intent(cleaned, history)
-        evidence = retrieve_evidence(interpretation, self.indexer)
-        answer = generate_educational_answer(cleaned, interpretation, evidence, history)
-        sources = validate_and_extract_citations(answer, evidence)
+        history = session_memory.get_history()
 
-        self.memory.add_user_message(cleaned)
-        self.memory.add_assistant_response(answer, [s["reference"] for s in sources])
+        interpretation = interpret_user_intent(cleaned, history)
+
+        evidence = retrieve_evidence(
+            interpretation,
+            self.indexer
+        )
+
+        answer = generate_educational_answer(
+            cleaned,
+            interpretation,
+            evidence,
+            history
+        )
+
+        sources = validate_and_extract_citations(
+            answer,
+            evidence
+        )
+
+        session_memory.add_user_message(cleaned)
+
+        session_memory.add_assistant_response(
+            answer,
+            [s["reference"] for s in sources]
+        )
 
         return {
             "answer": answer,
@@ -61,5 +88,8 @@ class ReCoverChatbot:
             "evidence": evidence
         }
 
-    def reset(self) -> None:
-        self.memory.clear()
+    def reset(self, memory: ConversationManager = None) -> None:
+
+        session_memory = memory if memory is not None else self.memory
+
+        session_memory.clear()

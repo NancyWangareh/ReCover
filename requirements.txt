@@ -1,14 +1,11 @@
 fastapi
 uvicorn
-scikit-learn==1.6.1
-numpy==2.4.6
-pandas==2.2.3
-joblib==1.6.0
+requests
 pydantic
+python-dotenv
 pypdf
 langchain-text-splitters
 chromadb
 sentence-transformers
 google-genai
 openpyxl
-requests

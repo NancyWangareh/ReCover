@@ -1,0 +1,68 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any
+
+from orchestration.agent import (
+    handle_message,
+    reset_information_session
+)
+
+
+app = FastAPI(
+    title="ReCover Orchestration API",
+    description=(
+        "Unified microinsurance information and "
+        "recommendation system for Kenyan mitumba traders."
+    ),
+    version="1.0.0"
+)
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1)
+    session_id: str = Field(min_length=1)
+    intent: Optional[str] = None
+    trader_data: Optional[Dict[str, Any]] = None
+
+
+@app.get("/")
+def home():
+    return {
+        "project": "ReCover",
+        "service": "Orchestration API",
+        "status": "running"
+    }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+        "service": "ReCover Orchestration API"
+    }
+
+
+@app.post("/chat")
+def chat(request: ChatRequest):
+
+    try:
+        result = handle_message(
+            message=request.message,
+            session_id=request.session_id,
+            trader_data=request.trader_data,
+            intent=request.intent
+        )
+
+        return result
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+@app.post("/reset/{session_id}")
+def reset_session(session_id: str):
+
+    return reset_information_session(session_id)
