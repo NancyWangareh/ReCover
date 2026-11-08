@@ -19,18 +19,13 @@ import numpy as np
 # 1. LOAD TRAINED MODEL BUNDLE
 # ============================================================
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+from pathlib import Path
 
-MODEL_PATH = os.path.abspath(
-    os.path.join(
-        BASE_DIR,
-        "..",
-        "models",
-        "recover_model_bundle.pkl"
-    )
-)
+BASE_DIR = Path(__file__).resolve().parent
 
-if not os.path.exists(MODEL_PATH):
+MODEL_PATH = BASE_DIR / "recover_model_bundle.pkl"
+
+if not MODEL_PATH.exists():
     raise FileNotFoundError(
         f"Model bundle not found: {MODEL_PATH}"
     )
