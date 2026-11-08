@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu
 fastapi
 uvicorn
 requests
@@ -8,4 +10,5 @@ langchain-text-splitters
 chromadb
 sentence-transformers
 google-genai
+pandas
 openpyxl
