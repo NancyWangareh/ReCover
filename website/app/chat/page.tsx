@@ -358,10 +358,17 @@ export default function ChatPage() {
                     >
                       {/* Filter out empty bullet lines like "- \n" or "* \n" or "2. \n" */}
                       {msg.text
-                       .replace(/^[-*•]\s*$/gm, "")
-                       .replace(/^\d+\.\s*$/gm, "")
-                       .replace(/\n\s*\n\s*\n/g, "\n\n")}
-                
+                       ? msg.text
+                        .split("\n")
+                        .filter((line) => {
+                           const trimmed = line.trim();
+                          // Drop lines that are just empty bullet markers or stray numbers
+                          return !["-", "*", "•"].includes(trimmed) && !/^\d+\.$/.test(trimmed);
+                        })
+                        .join("\n")
+                        .replace(/\n{3,}/g, "\n\n")
+                        .trim()
+                       : ""}
                   </ReactMarkdown>
 
                   {msg.sources && msg.sources.length > 0 && (
