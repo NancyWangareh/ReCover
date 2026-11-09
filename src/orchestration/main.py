@@ -132,7 +132,7 @@ def reset_session(session_id: str):
 
 # Allow requests from the ReCover frontend.
 allowed_origins = [
-    origin.strip()
+    origin.strip().rstrip("/")
     for origin in os.getenv(
         "FRONTEND_ORIGINS",
         "http://localhost:3000,http://127.0.0.1:3000"
@@ -140,12 +140,14 @@ allowed_origins = [
     if origin.strip()
 ]
 
+print("CORS ALLOWED ORIGINS:", allowed_origins)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
 # Serve original PDF documents for clickable citations.
