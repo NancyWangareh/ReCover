@@ -356,7 +356,12 @@ export default function ChatPage() {
                     li: ({ children }) => <li className="pl-1">{children}</li>,
                   }}
                     >
-                      {msg.text}
+                      {/* Filter out empty bullet lines like "- \n" or "* \n" or "2. \n" */}
+                      {msg.text
+                       .replace(/^[-*•]\s*$/gm, "")
+                       .replace(/^\d+\.\s*$/gm, "")
+                       .replace(/\n\s*\n\s*\n/g, "\n\n")}
+                
                   </ReactMarkdown>
 
                   {msg.sources && msg.sources.length > 0 && (

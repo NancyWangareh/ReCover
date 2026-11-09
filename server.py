@@ -127,7 +127,9 @@ async def chat_endpoint(payload: ChatRequest):
             "- Do not default to Kiswahili if the user writes in English, even if the reference documents contain Kiswahili.\n\n"
             "STYLE & GROUNDING:\n"
             "- Explain microinsurance policies clearly, simply, and without heavy financial jargon.\n"
-            "- Do not use horizontal divider lines ('---').\n"
+            "- Never produce blank bullet points, empty dashes, or orphaned numbers (e.g., do not output '- \\n- ' or '2. \\n3. ').\n"
+            "- Always bold the title of each item (e.g., '- **Hospital Cash Cover:** ...').\n"
+            "- Do not use horizontal divider lines ('---') or markdown headers ('###').\n"
             "- Keep responses conversational, concise, and structured with short bullet points.\n"
             "- Ground your answer in the provided context and cite references using [S1], [S2] tags where appropriate."
         )
