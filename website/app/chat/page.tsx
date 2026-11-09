@@ -346,8 +346,17 @@ export default function ChatPage() {
                       : "bg-white text-[#212121] border border-[#E7DFD1] rounded-bl-xs"
                   }`}
                 >
-                  <ReactMarkdown>
-                    {msg.text}
+                 <ReactMarkdown
+                    components={{
+                    strong: ({ children }) => <strong className="font-extrabold text-inherit">{children}</strong>,
+                    b: ({ children }) => <b className="font-extrabold text-inherit">{children}</b>,
+                    p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc pl-5 my-2 space-y-1">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-5 my-2 space-y-1">{children}</ol>,
+                    li: ({ children }) => <li className="pl-1">{children}</li>,
+                  }}
+                    >
+                      {msg.text}
                   </ReactMarkdown>
 
                   {msg.sources && msg.sources.length > 0 && (
